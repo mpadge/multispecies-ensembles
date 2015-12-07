@@ -4,6 +4,7 @@ LIBS=-lboost_program_options
 VPATH=./src
 OBJECTS = utils.o pop-fns.o model.o
 OBJECTS_050 = utils.o pop-fns.o model050.o
+OBJECTS_100 = utils.o pop-fns.o model100.o
 OBJECTS_THEORETICAL = model050-theoretical.o
 OBJECTS_ENVCOR = utils.o pop-fns.o model-envcor.o
 OBJECTS_TROPH = trophic-levels.o
@@ -15,6 +16,9 @@ model: $(OBJECTS)
 
 model050: $(OBJECTS_050)
 	$(CXX) $(OBJECTS_050) -o model050 $(LIBS) 
+
+model100: $(OBJECTS_100)
+	$(CXX) $(OBJECTS_100) -o model100 $(LIBS) 
 
 theor: $(OBJECTS_THEORETICAL)
 	$(CXX) $(OBJECTS_THEORETICAL) -o model-theor

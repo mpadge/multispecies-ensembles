@@ -137,9 +137,8 @@ int main(int argc, char *argv[])
 		for (int i=0; i<nTrials; i++) {
 			makeCommunity (nSpecies, sync, speciesData, generator, 0);
 			makeNoise (nSpecies, noise, generator);
-			for (int j=0; j<len_t; j++) {
+			for (int j=0; j<len_t; j++) 
 				noise_global (j) = noise (j, nSpecies);
-			}
 			runPop (nSpecies, noise, speciesData, pop_t);
 			regr = regression (noise_global, pop_t);
 			r2 (nSpecies - 1, i) = regr.r2;

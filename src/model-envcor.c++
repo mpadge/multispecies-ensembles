@@ -9,34 +9,11 @@
  * 	        interaction.  The first effect requires a scaling coefficient,
  * 	        called nscale, while the second is examined simply by sorting the
  * 	        allocated values of alpha_i.
- * 
- * Unsuprisingly, none of these really make much difference, as illustrated by
- * the following output, produced with fixed seed of 111, averaged over 100
- * trials, with 50 species and sync = (0.1, 0.2, 0.3, 0.5) for the four R2
- * values:
- * 
- * 	alpha adjusted		nscale	R2
- * 			sync values	->	0.1			0.2			0.3			0.5
- * 	--------------		------	-----------------------------------------------------
- * 		no			  0.0	0.28		0.66		0.83		0.93
- * 		yes			  0.0	0.28		0.65		0.83		0.93
- * 		no			  0.2	0.29		0.67		0.83		0.94
- * 		yes			  0.2	0.30		0.67		0.84		0.95
- * 	--------------		------	-----------------------------------------------------
- * The results for sync = 0.2 are the only ones that ever so slightly differ
- * from the general pattern of both effects increasing correlations. The
- * respective percentage increases w.r.t. the first value with neither effect
- * are:
- * 	alpha adjusted		nscale	R2
- * 			sync values	->	0.1			0.2			0.3			0.5
- * 	--------------		------	-----------------------------------------------------
- * 		yes			  0.0	2.36			-0.12		0.19			0.08
- * 		no			  0.2	3.98			1.91			0.95			0.32
- * 		yes			  0.2	6.35			1.79			1.13			0.40
- * 	--------------		------	-----------------------------------------------------
- * and the ratios of effect sizes of non-independent x_i (nscale=0.2) to
- * adjusting alpha_i values are then (1.69, 15.91, 5, 4) for sync = (0.1, 0.2,
- * 0.3, 0.5).
+ *
+ * NOTE that (ii) works, and is implemented directly in pop-fns, while this code
+ * implements (i). Although it works, it only generates positive increases for
+ * very small values of nscale (<0.001), with resultant R2 values strongly
+ * dependent on the chosen value. 
  */
 
 #include "utils.h"
@@ -74,15 +51,16 @@ int main(int argc, char *argv[])
         boost::program_options::options_description config("Configuration");
         config.add_options()
             ("nTrials,n", boost::program_options::value <int> 
-                (&nTrials)->default_value (10), "nTrials")
+                (&nTrials)->default_value (1), "nTrials")
             ("sync,s", boost::program_options::value <double>
-                (&sync)->default_value (0.5), "sync")
+                (&sync)->default_value (0.1), "sync")
             ("nSpecies,p", boost::program_options::value <int> 
-                (&nSpecies)->default_value (100), "nSpecies")
+                (&nSpecies)->default_value (10), "nSpecies")
             ("nscale,l", boost::program_options::value <double>
-                (&nscale)->default_value (0.2), "nscale")
+                (&nscale)->default_value (0.0), "nscale")
             ("adj_rho,a", boost::program_options::value <int> 
-                (&adj_rho)->default_value (0), "adj_rho")
+                (&adj_rho)->default_value (0), 
+                "adj_rho (non-zero values flag adjustment)")
             ;
 
         boost::program_options::options_description cmdline_options;
@@ -117,13 +95,13 @@ int main(int argc, char *argv[])
 	std::cout << "nTrials = " << nTrials << "; sync = " << sync <<
 		"; nSpecies = " << nSpecies << "; nscale = " << nscale;
 	if (adj_rho == 0) 
-        std::cout << "; alpha will NOT be adjusted." << std::endl;
+        std::cout << "; rho will NOT be adjusted." << std::endl;
 	else 
-        std::cout << "; alpha WILL be adjusted." << std::endl;
+        std::cout << "; rho WILL be adjusted." << std::endl;
 
 	time (&seed);
-	//generator.seed(static_cast<unsigned int>(seed));
-	generator.seed(static_cast<unsigned int>(111));
+	generator.seed(static_cast<unsigned int>(seed));
+	//generator.seed(static_cast<unsigned int>(20));
 	boost::uniform_real<> uni_dist(0,1);
 	boost::variate_generator<base_generator_type&,
 		boost::uniform_real<> > runif(generator, uni_dist);
@@ -143,6 +121,7 @@ int main(int argc, char *argv[])
 	speciesData.spvec = tempvec;
 	speciesData.compMat = tempdmat;
 	boost::numeric::ublas::matrix<double> noise (len_t, nSpecies + 1);
+	boost::numeric::ublas::matrix<double> noise_adj (len_t, nSpecies);
 	boost::numeric::ublas::vector<double> noise_global (len_t);
 	boost::numeric::ublas::vector<double> pop_t (len_t);
 
@@ -151,32 +130,29 @@ int main(int argc, char *argv[])
     {
 		makeCommunity (nSpecies, sync, speciesData, generator, adj_rho);
 		makeNoise (nSpecies, noise, generator);
-		// Then adjust the noise according to strengths of species' interactions.
-		// The adjustment is scaled by the above parameter, nscale.
-		for (int j=0; j<(nSpecies - 1); j++) 
-        {
-			for (int k=(j+1); k<nSpecies; k++) 
-            {
-				tempd [0] = fabs (speciesData.compMat (j, k)) + 
-                    fabs (speciesData.compMat (k, j));
-				tempd [0] = (double) nscale * tempd [0] / (200.0 * bsd);
-				for (int t=0; t<len_t; t++) 
+		// Then adjust the noise according to strengths of species' interactions:
+		for (int j=0; j<nSpecies; j++) 
+            for (int k=0; k<nSpecies; k++) 
+                if (k != j)
                 {
-					tempd [1] = (1.0 - tempd [0]) * noise (t, j) + tempd [0] * noise (t, k);
-					tempd [2] = (1.0 - tempd [0]) * noise (t, k) + tempd [0] * noise (t, j);
-					noise (t, j) = tempd [1];
-					noise (t, k) = tempd [2];
-				} // end for t
-            }
-        } // end for j
+                    tempd [0] = fabs (speciesData.compMat (j, k)) + 
+                        fabs (speciesData.compMat (k, j));
+                    tempd [0] = nscale * tempd [0] / (2.0 * bsd);
+                    for (int t=0; t<len_t; t++)
+                        noise_adj (t, j) = tempd [0] * noise (t, k) +
+                            sqrt (1.0 - tempd [0] * tempd [0]) * noise (t, j);
+                } // end if k != j
+		for (int j=0; j<nSpecies; j++) 
+            for (int t=0; t<len_t; t++)
+                noise (t, j) = noise_adj (t, j);
+
 		for (int j=0; j<len_t; j++)
 			noise_global (j) = noise (j, nSpecies);
 		runPop (nSpecies, noise, speciesData, pop_t);
-		regr = regression (noise_global, pop_t);
-		r2 += regr.r2;
-		std::cout << "."; std::cout.flush();
+		r2 += regression (noise_global, pop_t).r2;
 	}
-	std::cout << std::endl << "R2 = " << r2 / (double) nTrials << std::endl;
+    r2 = r2 / (double) nTrials;
+	std::cout << "R2 = " << r2 << std::endl;
 
 	return 0;
 }; // end main

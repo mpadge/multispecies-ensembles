@@ -21,7 +21,8 @@ void makeCommunity (int nSpecies, double sync, SpeciesData & speciesData,
 		boost::normal_distribution<> > rnorm(generator, norm_dist);
 
 	double q = 0.7;
-	for (int i=0; i<nSpecies; i++) {
+	for (int i=0; i<nSpecies; i++) 
+    {
 		speciesData.spvec (i).ar [0] = 1.0 + sigma_a * rnorm ();
 		speciesData.spvec (i).ar [1] = sigma_a * rnorm () * q;
 		speciesData.spvec (i).ar [2] = sigma_a * rnorm () * q * q;
@@ -32,10 +33,14 @@ void makeCommunity (int nSpecies, double sync, SpeciesData & speciesData,
 		for (int j=0; j<4; j++) 
 			speciesData.spvec (i).ar [j] = speciesData.spvec (i).ar [j] / tempd;
 
-		/* NOTE the importance of the following condition. The upper limit has to be
-		 * the opposite of the lower limit, so the distribution stays at all times
-		 * symmetrical. Without this, the distribution becomes biased with increasing
-		 * sigma_rho, producing greater *mean* values, and skewing everything.
+        /* NOTE the importance of the following condition. The upper limit has
+         * to be the opposite of the lower limit, so the distribution stays at
+         * all times symmetrical. Without this, the distribution becomes biased
+         * with increasing sigma_rho, producing greater *mean* values, and
+         * skewing everything.
+         *
+         * NOTE also the important implication that values of rho are normally
+         * distributed, and *NOT* values of rho^2.
          */
 		speciesData.spvec (i).rho = sync + sigma_rho * rnorm ();
 		while (speciesData.spvec (i).rho <= 0.0 || 
@@ -51,6 +56,8 @@ void makeCommunity (int nSpecies, double sync, SpeciesData & speciesData,
 			speciesData.compMat (i, j) = bmn + bsd * tempd;
 			speciesData.compMat (j, i) = bmn - bsd * tempd;
         }
+    // NOTE that with bmn = -0.001 and bsd = 0.05, values of compMat still
+    // generally reach extrema of around +/- 0.2.
 
 	if (adj_rho > 0) {
 		// Then sort the rho_i values according to compVec strengths. Start by
@@ -105,9 +112,11 @@ void runPop (int nSpecies, dmat noise, SpeciesData speciesData, dvec & pop_t)
         spvec2 (nSpecies), spvec3 (nSpecies), tempvec (nSpecies);
 
 	// Add shared signal to species noise
-	for (int t=0; t<len_t; t++) {
+	for (int t=0; t<len_t; t++) 
+    {
 		pop_t (t) = 0.0;
-		for (int i=0; i<nSpecies; i++) {
+		for (int i=0; i<nSpecies; i++) 
+        {
             tempd = speciesData.spvec (i).rho;
 			noise (t, i) = tempd * noise (t, nSpecies) +
 				sqrt (1.0 - tempd * tempd) * noise (t, i);
@@ -115,7 +124,8 @@ void runPop (int nSpecies, dmat noise, SpeciesData speciesData, dvec & pop_t)
 	}
 
 	// Run in first three AR steps
-	for (int i=0; i<nSpecies; i++) {
+	for (int i=0; i<nSpecies; i++) 
+    {
 		spvec0 (i) = noise (0, i);
 		for (int j=0; j<nSpecies; j++)
 			spvec0 (i) += noise (0, j) * speciesData.compMat (j, i);
@@ -129,7 +139,8 @@ void runPop (int nSpecies, dmat noise, SpeciesData speciesData, dvec & pop_t)
 			tempvec (i) += spvec1 (j) * speciesData.compMat (j, i);
 	
 	spvec1 = tempvec;
-	for (int i=0; i<nSpecies; i++) {
+	for (int i=0; i<nSpecies; i++) 
+    {
 		pop_t (1) += spvec1 (i);
 		spvec2 (i) = speciesData.spvec (i).ar [0] * noise (2, i) + 
             speciesData.spvec (i).ar [1] * spvec1 (i) +
@@ -144,7 +155,8 @@ void runPop (int nSpecies, dmat noise, SpeciesData speciesData, dvec & pop_t)
         pop_t (2) += spvec2 (i);
 
 	// Then the full run
-	for (int t=3; t<len_t; t++) {
+	for (int t=3; t<len_t; t++) 
+    {
 		for (int i=0; i<nSpecies; i++)
 			spvec3 (i) = speciesData.spvec (i).ar [0] * noise (t, i) + 
                 speciesData.spvec (i).ar [1] * spvec2 (i) +
