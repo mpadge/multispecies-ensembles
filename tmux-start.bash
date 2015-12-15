@@ -31,7 +31,7 @@ tmux select-pane -t 0
 cd ../
 tmux new-window -t $SESSION:3 -n makefile
 tmux select-window -t $SESSION:3
-tmux send-keys -t $SESSION:3 'vim build/CMakeLists.txt' C-m
+tmux send-keys -t $SESSION:3 'vim CMakeLists.txt' C-m
 tmux send-keys -t $SESSION:3 ':' 'tabe tmux-start.bash' C-m
 
 tmux split-window -h
