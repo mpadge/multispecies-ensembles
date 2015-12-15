@@ -1,0 +1,22 @@
+cmake_minimum_required(VERSION 2.8.7)
+project(model CXX)
+include_directories(include)
+ADD_DEFINITIONS(
+    -std=c++11 
+)
+#file(GLOB SOURCES "src/*.c++")
+set(SOURCES src/utils.c++ src/pop-fns.c++ src/model.c++)
+set(SOURCES050 src/utils.c++ src/pop-fns.c++ src/model050.c++)
+set(SOURCES_THEOR src/model050-theoretical.c++)
+set(SOURCES_ENVCOR src/utils.c++ src/pop-fns.c++ src/model-envcor.c++)
+set(SOURCES_TROPH src/trophic-levels.c++)
+
+add_executable(model ${SOURCES})
+add_executable(model050 ${SOURCES050})
+add_executable(model-theor ${SOURCES_THEOR})
+add_executable(model-envcor ${SOURCES_ENVCOR})
+add_executable(trophic-levels ${SOURCES_TROPH})
+target_link_libraries(model boost_program_options)
+target_link_libraries(model050 boost_program_options)
+target_link_libraries(model-theor boost_program_options)
+target_link_libraries(model-envcor boost_program_options)
