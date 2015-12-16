@@ -18,13 +18,13 @@
 
 int main(int argc, char *argv[])
 {
-	int nTrials, count = 0;
-	double sync, rho [2], r2, tempd;
-	std::ofstream out_file;
-	SpeciesData speciesData;
-	RegrResults regr;
+    int nTrials, count = 0;
+    double sync, rho [2], r2, tempd;
+    std::ofstream out_file;
+    SpeciesData speciesData;
+    RegrResults regr;
     time_t seed;
-	base_generator_type generator(42u);
+    base_generator_type generator(42u);
 
     try {
         boost::program_options::options_description generic("Generic options");
@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
         boost::program_options::options_description config("Configuration");
         config.add_options()
             ("nTrials,n", boost::program_options::value <int> 
-                (&nTrials)->default_value (10), "nTrials")
+             (&nTrials)->default_value (10), "nTrials")
             ;
 
         boost::program_options::options_description cmdline_options;
@@ -67,43 +67,43 @@ int main(int argc, char *argv[])
         std::cout << e.what() << std::endl;
         return 1;
     }    
-	std::cout << "nTrials = " << nTrials << std::endl;
+    std::cout << "nTrials = " << nTrials << std::endl;
 
-	time (&seed);
-	generator.seed(static_cast<unsigned int>(seed));
-	//generator.seed(static_cast<unsigned int>(2));
-	boost::uniform_real<> uni_dist(0,1);
-	boost::variate_generator<base_generator_type&,
-		boost::uniform_real<> > runif(generator, uni_dist);
-	boost::normal_distribution<> norm_dist (0.0, 1.0);
-	boost::variate_generator<base_generator_type&,
-		boost::normal_distribution<> > rnorm(generator, norm_dist);
-	// Burn both generators in
-	for (int i=0; i<20; i++) {
-		tempd = runif();
-		tempd = rnorm();
-	}
+    time (&seed);
+    generator.seed(static_cast<unsigned int>(seed));
+    //generator.seed(static_cast<unsigned int>(2));
+    boost::uniform_real<> uni_dist(0,1);
+    boost::variate_generator<base_generator_type&,
+        boost::uniform_real<> > runif(generator, uni_dist);
+    boost::normal_distribution<> norm_dist (0.0, 1.0);
+    boost::variate_generator<base_generator_type&,
+        boost::normal_distribution<> > rnorm(generator, norm_dist);
+    // Burn both generators in
+    for (int i=0; i<20; i++) {
+        tempd = runif();
+        tempd = rnorm();
+    }
 
-	boost::numeric::ublas::matrix<double> noise (len_t, nSpecies_max + 1);
-	boost::numeric::ublas::vector<double> noise_global (len_t);
-	boost::numeric::ublas::vector<double> pop_t (len_t);
-	boost::numeric::ublas::vector<SpeciesPars> tempvec (nSpecies_max);
-	boost::numeric::ublas::matrix<double> tempdmat (nSpecies_max, nSpecies_max);
-	speciesData.spvec = tempvec;
-	speciesData.compMat = tempdmat;
+    boost::numeric::ublas::matrix<double> noise (len_t, nSpecies_max + 1);
+    boost::numeric::ublas::vector<double> noise_global (len_t);
+    boost::numeric::ublas::vector<double> pop_t (len_t);
+    boost::numeric::ublas::vector<SpeciesPars> tempvec (nSpecies_max);
+    boost::numeric::ublas::matrix<double> tempdmat (nSpecies_max, nSpecies_max);
+    speciesData.spvec = tempvec;
+    speciesData.compMat = tempdmat;
 
     std::stringstream ss;
     ss.str ("");
     ss<< nTrials;
     std::string fname = "rholims_for_r050_ntrials" + ss.str () + ".txt";
-	out_file.open (fname);
-	out_file << "n,\trho" << std::endl;
-	for (int nSpecies = 2; nSpecies <= nSpecies_max; nSpecies++) {
-		// This searche uses the list of 3 parameters sorted as [low, high, middle]
-		rho [0] = 0.01; rho [1] = 0.99;
+    out_file.open (fname);
+    out_file << "n,\trho" << std::endl;
+    for (int nSpecies = 2; nSpecies <= nSpecies_max; nSpecies++) {
+        // This searche uses the list of 3 parameters sorted as [low, high, middle]
+        rho [0] = 0.01; rho [1] = 0.99;
 
-		while (fabs (rho [1] - rho [0]) > 0.001) {
-			sync = (rho [0] + rho [1]) / 2.0;
+        while (fabs (rho [1] - rho [0]) > 0.001) {
+            sync = (rho [0] + rho [1]) / 2.0;
 
             r2 = 0.0;
             for (int i=0; i<nTrials; i++) {
@@ -117,22 +117,22 @@ int main(int argc, char *argv[])
                 r2 += regr.r2;
             }
             r2 = r2 / (double) nTrials;
-			if (r2 > 0.5) 
+            if (r2 > 0.5) 
                 rho [1] = sync;
-			else 
+            else 
                 rho [0] = sync;
-		} // end while
+        } // end while
         sync = sync * sync;
-		out_file << nSpecies << ",\t" << sync << std::endl;
+        out_file << nSpecies << ",\t" << sync << std::endl;
 
         tempd = 100.0 * ((double) nSpecies - 1.0) / 
             ((double) nSpecies_max - 1.0);
         std::cout << "\r" << nSpecies << " / " << nSpecies_max <<
             " = " << tempd << "%";
         std::cout.flush ();
-	}
-	out_file.close();
+    }
+    out_file.close();
     std::cout << " done." << std::endl;
 
-	return 0;
+    return 0;
 }; // end main

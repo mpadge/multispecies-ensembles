@@ -18,7 +18,7 @@ const int len_t = 1000;
 const double bmn = -0.001, bsd = 0.05, sigma_a = 0.5, sigma_rho = 0.5;
 
 struct SpeciesPars{
-	double ar [4], rho;
+    double ar [4], rho;
 };
 /* SpeciesPars is a vector of (nSpecies) with:
  * 	a		= AR coefficients around means of [1,0,0], with
@@ -27,8 +27,8 @@ struct SpeciesPars{
  */
 typedef boost::numeric::ublas::vector<SpeciesPars> species_vec;
 struct SpeciesData{
-	species_vec spvec;
-	dmat compMat;
+    species_vec spvec;
+    dmat compMat;
 };
 
 void makeCommunity (int nSpecies, double sync, SpeciesData & speciesData, 

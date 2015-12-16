@@ -60,17 +60,17 @@
 
 int main(int argc, char *argv[])
 {
-	int nSpecies, nTrials, count;
-	double sync, sumr, sumr2, tempd;
-	SpeciesData speciesData;
-	RegrResults regr;
-	std::ifstream in_file;
-	std::string linetxt, fname;
-	std::stringstream ss_code;
-	std::ofstream out_file;
-	clock_t timer[2];
-	time_t seed;
-	base_generator_type generator(42u);
+    int nSpecies, nTrials, count;
+    double sync, sumr, sumr2, tempd;
+    SpeciesData speciesData;
+    RegrResults regr;
+    std::ifstream in_file;
+    std::string linetxt, fname;
+    std::stringstream ss_code;
+    std::ofstream out_file;
+    clock_t timer[2];
+    time_t seed;
+    base_generator_type generator(42u);
 
     try {
         boost::program_options::options_description generic("Generic options");
@@ -82,9 +82,9 @@ int main(int argc, char *argv[])
         boost::program_options::options_description config("Configuration");
         config.add_options()
             ("nTrials,n", boost::program_options::value <int> 
-                (&nTrials)->default_value (10), "nTrials")
+             (&nTrials)->default_value (10), "nTrials")
             ("nSpecies,s", boost::program_options::value <double>
-                (&sync)->default_value (20), "nSpecies")
+             (&sync)->default_value (20), "nSpecies")
             ;
 
         boost::program_options::options_description cmdline_options;
@@ -116,114 +116,114 @@ int main(int argc, char *argv[])
         return 1;
     }    
 
-	std::cout << "nTrials = " << nTrials << "; nSpecies = " << nSpecies << std::endl;
+    std::cout << "nTrials = " << nTrials << "; nSpecies = " << nSpecies << std::endl;
 
-	time (&seed);
-	generator.seed(static_cast<unsigned int>(seed));
-	boost::uniform_real<> uni_dist(0,1);
-	boost::variate_generator<base_generator_type&,
-		boost::uniform_real<> > runif(generator, uni_dist);
-	boost::normal_distribution<> norm_dist (0.0, 1.0);
-	boost::variate_generator<base_generator_type&,
-		boost::normal_distribution<> > rnorm(generator, norm_dist);
-	// Burn both generators in
-	for (int i=0; i<20; i++) {
-		tempd = runif();
-		tempd = rnorm();
-	}
+    time (&seed);
+    generator.seed(static_cast<unsigned int>(seed));
+    boost::uniform_real<> uni_dist(0,1);
+    boost::variate_generator<base_generator_type&,
+        boost::uniform_real<> > runif(generator, uni_dist);
+    boost::normal_distribution<> norm_dist (0.0, 1.0);
+    boost::variate_generator<base_generator_type&,
+        boost::normal_distribution<> > rnorm(generator, norm_dist);
+    // Burn both generators in
+    for (int i=0; i<20; i++) {
+        tempd = runif();
+        tempd = rnorm();
+    }
 
-	// Set up data to fixed size of nSpecies_max
-	boost::numeric::ublas::vector<SpeciesPars> tempvec (nSpecies);
-	boost::numeric::ublas::matrix<double> tempdmat (nSpecies, nSpecies);
-	speciesData.spvec = tempvec;
-	speciesData.compMat = tempdmat;
-	dvec noise_global (len_t);
-	dvec pop_t (len_t);
-	boost::numeric::ublas::matrix<double> noise (len_t, nSpecies + 1);
-	boost::numeric::ublas::vector<double> pop_t1 (len_t); // normal distribution
-	boost::numeric::ublas::vector<double> pop_t2 (len_t); // squared values
+    // Set up data to fixed size of nSpecies_max
+    boost::numeric::ublas::vector<SpeciesPars> tempvec (nSpecies);
+    boost::numeric::ublas::matrix<double> tempdmat (nSpecies, nSpecies);
+    speciesData.spvec = tempvec;
+    speciesData.compMat = tempdmat;
+    dvec noise_global (len_t);
+    dvec pop_t (len_t);
+    boost::numeric::ublas::matrix<double> noise (len_t, nSpecies + 1);
+    boost::numeric::ublas::vector<double> pop_t1 (len_t); // normal distribution
+    boost::numeric::ublas::vector<double> pop_t2 (len_t); // squared values
 
-	out_file.open ("aaajunk.txt");
-	out_file << "alpha,\tr2mn,\tr2sd" << std::endl;
-	for (int s=0; s<50; s++) {
-		sync = (double) s / 100.0;
-		sumr = 0.0;
-		sumr2 = 0.0;
-		count = 0;
-		for (int i=0; i<nTrials; i++) {
-			makeCommunity (nSpecies, sync, speciesData, generator, 0);
-			makeNoise (nSpecies, noise, generator);
-			runPop (nSpecies, noise, speciesData, pop_t1);
+    out_file.open ("aaajunk.txt");
+    out_file << "alpha,\tr2mn,\tr2sd" << std::endl;
+    for (int s=0; s<50; s++) {
+        sync = (double) s / 100.0;
+        sumr = 0.0;
+        sumr2 = 0.0;
+        count = 0;
+        for (int i=0; i<nTrials; i++) {
+            makeCommunity (nSpecies, sync, speciesData, generator, 0);
+            makeNoise (nSpecies, noise, generator);
+            runPop (nSpecies, noise, speciesData, pop_t1);
             // Then square the species interactions to skew the distribution.
             // Note that adjusting the distribution to maintain constant
             // variance requires re-scaling the rnorm() values to (0,1),
             // dividing by the value of 1.75 --- i just got this from R, not by
             // analysing what it should really be! --- and then re-scaling again
             // by bsd.
-			for (int j=0; j<(nSpecies - 1); j++) 
-				for (int k=(j + 1); k<nSpecies; k++) 
+            for (int j=0; j<(nSpecies - 1); j++) 
+                for (int k=(j + 1); k<nSpecies; k++) 
                 {
-					tempd = (speciesData.compMat (j, k) - bmn) / bsd;
-					if (tempd > 0.0) 
+                    tempd = (speciesData.compMat (j, k) - bmn) / bsd;
+                    if (tempd > 0.0) 
                     {
-						speciesData.compMat (j, k) = bmn + 
-                                bsd * tempd * tempd / 1.75;
-						speciesData.compMat (k, j) = bmn - 
-                                bsd * tempd * tempd / 1.75;
+                        speciesData.compMat (j, k) = bmn + 
+                            bsd * tempd * tempd / 1.75;
+                        speciesData.compMat (k, j) = bmn - 
+                            bsd * tempd * tempd / 1.75;
                     } else 
                     {
-						speciesData.compMat (j, k) = bmn - 
-                                bsd * tempd * tempd / 1.75;
-						speciesData.compMat (k, j) = bmn + 
-                                bsd * tempd * tempd / 1.75;
-					}
+                        speciesData.compMat (j, k) = bmn - 
+                            bsd * tempd * tempd / 1.75;
+                        speciesData.compMat (k, j) = bmn + 
+                            bsd * tempd * tempd / 1.75;
+                    }
                 }
-			runPop (nSpecies, noise, speciesData, pop_t2);
-			regr = regression (pop_t1, pop_t2);
-			// For some reason, correlations are sometimes very close to zero (dnix's?),
-			// so this if just removes those ones.
-			if (regr.r2 > 0.5) {
-				count++;
-				sumr += regr.r2;
-				sumr2 += regr.r2 * regr.r2;
-			}
-		}
-		sumr = sumr / (double) count;
-		sumr2 = sumr2 / (double) count - sumr * sumr;
-		sumr2 = sqrt (sumr2);
-		out_file << sync << ",\t" << sumr << ",\t" << sumr2 << std::endl;
-		std::cout << s << "."; std::cout.flush();
-	} // end for s
-	out_file.close();
-	std::cout << std::endl;
+            runPop (nSpecies, noise, speciesData, pop_t2);
+            regr = regression (pop_t1, pop_t2);
+            // For some reason, correlations are sometimes very close to zero (dnix's?),
+            // so this if just removes those ones.
+            if (regr.r2 > 0.5) {
+                count++;
+                sumr += regr.r2;
+                sumr2 += regr.r2 * regr.r2;
+            }
+        }
+        sumr = sumr / (double) count;
+        sumr2 = sumr2 / (double) count - sumr * sumr;
+        sumr2 = sqrt (sumr2);
+        out_file << sync << ",\t" << sumr << ",\t" << sumr2 << std::endl;
+        std::cout << s << "."; std::cout.flush();
+    } // end for s
+    out_file.close();
+    std::cout << std::endl;
 
-	return 0;
+    return 0;
 }; // end main
 
 /* R script to plot results
-junk <- function()
-{
-       ylims=c(0.95, 1)
+   junk <- function()
+   {
+   ylims=c(0.95, 1)
 
-       setwd("/data/Documents/analyses/birds & climate/multispecies model/")
-       dat <- read.csv ("results_skewed_interactions50sp.txt", header=TRUE)
-       indx <- which (dat$alpha != 0.29)
-       dat <- dat[indx,]
-       plot (dat$alpha, dat$r2mn, "l", col="lawngreen", lwd=2, ylim=ylims, xlab="alpha", ylab="R2")
-       lines (dat$alpha, dat$r2mn - dat$r2sd, col="lawngreen", lwd=2, lty=2)
-       lines (dat$alpha, dat$r2mn + dat$r2sd, col="lawngreen", lwd=2, lty=2)
+   setwd("/data/Documents/analyses/birds & climate/multispecies model/")
+   dat <- read.csv ("results_skewed_interactions50sp.txt", header=TRUE)
+   indx <- which (dat$alpha != 0.29)
+   dat <- dat[indx,]
+   plot (dat$alpha, dat$r2mn, "l", col="lawngreen", lwd=2, ylim=ylims, xlab="alpha", ylab="R2")
+   lines (dat$alpha, dat$r2mn - dat$r2sd, col="lawngreen", lwd=2, lty=2)
+   lines (dat$alpha, dat$r2mn + dat$r2sd, col="lawngreen", lwd=2, lty=2)
 
-       #dat <- read.csv ("results_skewed_interactions100sp.txt", header=TRUE)
-       dat <- read.csv ("aaajunk.txt", header=TRUE)
-       #indx <- which (dat$alpha != 0.48)
-       #dat <- dat [indx, ]
-       lines (dat$alpha, dat$r2mn, col="red", lwd=2)
-       lines (dat$alpha, dat$r2mn - dat$r2sd, col="red", lwd=2, lty=2)
-       lines (dat$alpha, dat$r2mn + dat$r2sd, col="red", lwd=2, lty=2)
+#dat <- read.csv ("results_skewed_interactions100sp.txt", header=TRUE)
+dat <- read.csv ("aaajunk.txt", header=TRUE)
+#indx <- which (dat$alpha != 0.48)
+#dat <- dat [indx, ]
+lines (dat$alpha, dat$r2mn, col="red", lwd=2)
+lines (dat$alpha, dat$r2mn - dat$r2sd, col="red", lwd=2, lty=2)
+lines (dat$alpha, dat$r2mn + dat$r2sd, col="red", lwd=2, lty=2)
 
-       ypos <- ylims[1] + 0.75 * diff (ylims)
-       legend (0.5 * max (dat$alpha), ypos, lwd=2, bty="n",
-               col=c("lawngreen", "red"), legend=c("50 species", "100 species"))
+ypos <- ylims[1] + 0.75 * diff (ylims)
+legend (0.5 * max (dat$alpha), ypos, lwd=2, bty="n",
+col=c("lawngreen", "red"), legend=c("50 species", "100 species"))
 }
 
 # And demonstration that scaling by 1.75 converts squared normal distribution
@@ -241,7 +241,7 @@ ylims <- range (c (h1$counts, h2$counts))
 plot (h1$mids, h1$counts, "l", col="red", xlim=xlims, ylim=ylims)
 lines (h2$mids, h2$counts, col="blue")
 legend (min(xlims), max(ylims), lwd=1, col=c("red","blue"), bty="n",
-       legend=c("normal","norm ^ 2"))
+legend=c("normal","norm ^ 2"))
 
 v1 <- formatC( var (x1), format="f", digits=4)
 v2 <- formatC( var (x2), format="f", digits=4)

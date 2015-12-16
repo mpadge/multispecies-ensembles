@@ -33,14 +33,14 @@ typedef boost::numeric::ublas::vector<double> dvec;
 typedef boost::numeric::ublas::matrix<double> dmat;
 
 const double DOUBLE_MAX = std::numeric_limits<double>::max (),
-    DOUBLE_MIN = -DOUBLE_MAX;
+      DOUBLE_MIN = -DOUBLE_MAX;
 
 struct RegrResults {
-	double r2, slope, intercept, SS, tval;	};
+    double r2, slope, intercept, SS, tval;	};
 
 struct myTime{
-	int hh, mm;
-	float ss;	};
+    int hh, mm;
+    float ss;	};
 
 RegrResults regression (dvec x, dvec y);
 void timeout (double tseconds);

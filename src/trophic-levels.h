@@ -33,7 +33,7 @@ const int nSpecies = 20;
 const double bmn = -0.001, bsd = 0.05;
 
 struct SpeciesData{
-	dmat compMat;
+    dmat compMat;
 };
 
 int makeCommunity (int nSpecies, SpeciesData & speciesData, 

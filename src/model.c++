@@ -84,74 +84,74 @@ int main(int argc, char *argv[])
         return 1;
     }    
 
-	std::cout << "nTrials = " << nTrials << "; sync = " << sync << std::endl;
+    std::cout << "nTrials = " << nTrials << "; sync = " << sync << std::endl;
 
-	time (&seed);
-	generator.seed(static_cast<unsigned int>(seed));
-	boost::uniform_real<> uni_dist(0,1);
-	boost::variate_generator<base_generator_type&,
-		boost::uniform_real<> > runif(generator, uni_dist);
-	boost::normal_distribution<> norm_dist (0.0, 1.0);
-	boost::variate_generator<base_generator_type&,
-		boost::normal_distribution<> > rnorm(generator, norm_dist);
-	// Burn both generators in
-	for (int i=0; i<20; i++) {
-		tempd = runif();
-		tempd = rnorm();
-	}
+    time (&seed);
+    generator.seed(static_cast<unsigned int>(seed));
+    boost::uniform_real<> uni_dist(0,1);
+    boost::variate_generator<base_generator_type&,
+        boost::uniform_real<> > runif(generator, uni_dist);
+    boost::normal_distribution<> norm_dist (0.0, 1.0);
+    boost::variate_generator<base_generator_type&,
+        boost::normal_distribution<> > rnorm(generator, norm_dist);
+    // Burn both generators in
+    for (int i=0; i<20; i++) {
+        tempd = runif();
+        tempd = rnorm();
+    }
 
-	// Set up data to fixed size of nSpecies_max
-	boost::numeric::ublas::vector<SpeciesPars> tempvec (nSpecies_max);
-	boost::numeric::ublas::matrix<double> tempdmat (nSpecies_max, nSpecies_max);
-	speciesData.spvec = tempvec;
-	speciesData.compMat = tempdmat;
-	dvec noise_global (len_t);
-	dvec pop_t (len_t);
-	boost::numeric::ublas::matrix<double> noise (len_t, nSpecies_max + 1);
-	boost::numeric::ublas::matrix<double> r2 (nSpecies_max, nTrials);
-	// Averaging correlations is kinda wrong to being with, and there's no
-	// sure way of saying whether one should average R or R2. At the moment,
+    // Set up data to fixed size of nSpecies_max
+    boost::numeric::ublas::vector<SpeciesPars> tempvec (nSpecies_max);
+    boost::numeric::ublas::matrix<double> tempdmat (nSpecies_max, nSpecies_max);
+    speciesData.spvec = tempvec;
+    speciesData.compMat = tempdmat;
+    dvec noise_global (len_t);
+    dvec pop_t (len_t);
+    boost::numeric::ublas::matrix<double> noise (len_t, nSpecies_max + 1);
+    boost::numeric::ublas::matrix<double> r2 (nSpecies_max, nTrials);
+    // Averaging correlations is kinda wrong to being with, and there's no
+    // sure way of saying whether one should average R or R2. At the moment,
     // it's R2 values, but individuals ones are stored in a matrix to allow easy
     // conversion to the alternative if desired.
 
-	std::stringstream ss_ntrials, ss_sync;
-	ss_ntrials.str (""); ss_ntrials << nTrials;
-	ss_sync.str (""); ss_sync << floor (100.0 * sync);
-	fname = "results_" + ss_ntrials.str() + "trials_sync";
-	if (sync < 1.0) 
+    std::stringstream ss_ntrials, ss_sync;
+    ss_ntrials.str (""); ss_ntrials << nTrials;
+    ss_sync.str (""); ss_sync << floor (100.0 * sync);
+    fname = "results_" + ss_ntrials.str() + "trials_sync";
+    if (sync < 1.0) 
         fname += "0";
-	if (sync < 0.1) 
+    if (sync < 0.1) 
         fname += "0";
-	fname += ss_sync.str() + ".txt";
+    fname += ss_sync.str() + ".txt";
 
-	out_file.open (fname.c_str(), std::ofstream::out);
-	out_file << "nspecies,\tr2mn,\tr2sd" << std::endl;
-	for (int nSpecies = 2; nSpecies <= nSpecies_max; nSpecies++) {
-		sumr = 0.0;
-		sumr2 = 0.0;
-		for (int i=0; i<nTrials; i++) {
-			makeCommunity (nSpecies, sync, speciesData, generator, 0);
-			makeNoise (nSpecies, noise, generator);
-			for (int j=0; j<len_t; j++) 
-				noise_global (j) = noise (j, nSpecies);
-			runPop (nSpecies, noise, speciesData, pop_t);
-			regr = regression (noise_global, pop_t);
-			r2 (nSpecies - 1, i) = regr.r2;
-			sumr += r2 (nSpecies - 1, i);
-			sumr2 += r2 (nSpecies - 1, i) * r2 (nSpecies - 1, i);
-		}
-		sumr = sumr / (double) nTrials;
-		sumr2 = sumr2 / (double) nTrials - sumr * sumr;
-		sumr2 = sqrt (sumr2);
-		out_file << nSpecies << ",\t" << sumr << ",\t" << sumr2 << std::endl;
-		
+    out_file.open (fname.c_str(), std::ofstream::out);
+    out_file << "nspecies,\tr2mn,\tr2sd" << std::endl;
+    for (int nSpecies = 2; nSpecies <= nSpecies_max; nSpecies++) {
+        sumr = 0.0;
+        sumr2 = 0.0;
+        for (int i=0; i<nTrials; i++) {
+            makeCommunity (nSpecies, sync, speciesData, generator, 0);
+            makeNoise (nSpecies, noise, generator);
+            for (int j=0; j<len_t; j++) 
+                noise_global (j) = noise (j, nSpecies);
+            runPop (nSpecies, noise, speciesData, pop_t);
+            regr = regression (noise_global, pop_t);
+            r2 (nSpecies - 1, i) = regr.r2;
+            sumr += r2 (nSpecies - 1, i);
+            sumr2 += r2 (nSpecies - 1, i) * r2 (nSpecies - 1, i);
+        }
+        sumr = sumr / (double) nTrials;
+        sumr2 = sumr2 / (double) nTrials - sumr * sumr;
+        sumr2 = sqrt (sumr2);
+        out_file << nSpecies << ",\t" << sumr << ",\t" << sumr2 << std::endl;
+
         tempd = 100.0 * (nSpecies - 1) / nSpecies_max;
         std::cout << "\r" << nSpecies << " / " <<
             nSpecies_max << " = " << tempd << "%";
         std::cout.flush ();
-	}
-	std::cout << " done." << std::endl;
-	out_file.close();
+    }
+    std::cout << " done." << std::endl;
+    out_file.close();
 
-	return 0;
+    return 0;
 }; // end main
