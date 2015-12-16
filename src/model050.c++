@@ -6,8 +6,6 @@
  * Dumps the file "rholims_for_r050.txt" containing ***R^2*** (not R!) values
  */
 
-#include "utils.h"
-#include "pop-fns.h"
 #include "model050.h"
 
 /************************************************************************

@@ -16,8 +16,6 @@
  * that's also precisely the way the theory is written, so has to be accepted.
  */
 
-#include "utils.h"
-#include "pop-fns.h"
 #include "model.h"
 
 /************************************************************************
@@ -90,7 +88,6 @@ int main(int argc, char *argv[])
 
 	time (&seed);
 	generator.seed(static_cast<unsigned int>(seed));
-	//generator.seed(static_cast<unsigned int>(2));
 	boost::uniform_real<> uni_dist(0,1);
 	boost::variate_generator<base_generator_type&,
 		boost::uniform_real<> > runif(generator, uni_dist);
@@ -108,8 +105,6 @@ int main(int argc, char *argv[])
 	boost::numeric::ublas::matrix<double> tempdmat (nSpecies_max, nSpecies_max);
 	speciesData.spvec = tempvec;
 	speciesData.compMat = tempdmat;
-	//boost::numeric::ublas::vector<double> noise_global (len_t);
-	//boost::numeric::ublas::vector<double> pop_t (len_t);
 	dvec noise_global (len_t);
 	dvec pop_t (len_t);
 	boost::numeric::ublas::matrix<double> noise (len_t, nSpecies_max + 1);
