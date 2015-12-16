@@ -139,7 +139,7 @@ int makeCommunity (int nSpecies, SpeciesData & speciesData,
 	boost::numeric::ublas::vector <int> troph_levels (nSpecies);
 	for (int i=0; i<nSpecies; i++) 
     {
-		troph_levels (i) = inix;
+		troph_levels (i) = INT_MIN;
 		for (int j=0; j<nSpecies; j++) 
         {
 			if (j != i) {
@@ -153,7 +153,7 @@ int makeCommunity (int nSpecies, SpeciesData & speciesData,
 	// the whole thing to work, there need to be "*" values.
 	/*
 	for (int i=0; i<nSpecies; i++) {
-		if (troph_levels (i) == inix) { std::cout << "*";	}
+		if (troph_levels (i) == INT_MIN) { std::cout << "*";	}
 		else { std::cout << troph_levels (i);	}
 		std::cout.flush();
 	}

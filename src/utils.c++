@@ -15,7 +15,7 @@ RegrResults regression (dvec x, dvec y)
 	int count = 0, n = x.size();
 	for (int i=0; i<n; i++) 
     {
-		if (x(i) > dnix && y(i) > dnix) 
+		if (x(i) > DOUBLE_MIN && y(i) > DOUBLE_MIN) 
         {
 			count++;
 			sx += x(i);
@@ -45,7 +45,7 @@ RegrResults regression (dvec x, dvec y)
 		regr_results.SS = 0.0;
 		for (int i=0; i<n; i++) 
         {
-			if (x(i) > dnix && y(i) > dnix) 
+			if (x(i) > DOUBLE_MIN && y(i) > DOUBLE_MIN) 
             {
 				count++;
 				t1 = regr_results.slope * x(i) + regr_results.intercept;
@@ -60,14 +60,15 @@ RegrResults regression (dvec x, dvec y)
 			regr_results.tval = sqrt(sy2 / ((double) count - 2)) / sqrt(sx2);
 			regr_results.tval = regr_results.slope / regr_results.tval;
         } else {
-			regr_results.SS = dnix; regr_results.tval = dnix;	
+			regr_results.SS = DOUBLE_MIN; 
+            regr_results.tval = DOUBLE_MIN;	
         }
     } else { // if count == 0
-		regr_results.r2 = dnix;
-		regr_results.slope = dnix;
-		regr_results.intercept = dnix;
-		regr_results.SS = dnix;
-		regr_results.tval = dnix;
+		regr_results.r2 = DOUBLE_MIN;
+		regr_results.slope = DOUBLE_MIN;
+		regr_results.intercept = DOUBLE_MIN;
+		regr_results.SS = DOUBLE_MIN;
+		regr_results.tval = DOUBLE_MIN;
 	}
 
 	return regr_results;

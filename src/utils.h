@@ -32,8 +32,8 @@ typedef boost::numeric::ublas::vector<int> ivec;
 typedef boost::numeric::ublas::vector<double> dvec;
 typedef boost::numeric::ublas::matrix<double> dmat;
 
-const int inix = -9999;
-const double dnix = -9999.0;
+const double DOUBLE_MAX = std::numeric_limits<double>::max (),
+    DOUBLE_MIN = -DOUBLE_MAX;
 
 struct RegrResults {
 	double r2, slope, intercept, SS, tval;	};

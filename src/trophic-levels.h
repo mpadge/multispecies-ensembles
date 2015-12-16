@@ -29,8 +29,8 @@ typedef boost::numeric::ublas::vector<double> dvec;
 typedef boost::numeric::ublas::matrix<double> dmat;
 typedef boost::numeric::ublas::matrix<double> darr;
 
-const int inix = -9999, nSpecies = 20;
-const double dnix = -9999.0, bmn = -0.001, bsd = 0.05;
+const int nSpecies = 20;
+const double bmn = -0.001, bsd = 0.05;
 
 struct SpeciesData{
 	dmat compMat;

@@ -18,7 +18,7 @@
 
 typedef boost::numeric::ublas::vector<double> dvec;
 
-const int inix = -9999, nSpecies_max = 100;
-const double dnix = -9999.0, bmn = -0.001, bsd = 0.05, sigma = 1.0;
+const int nSpecies_max = 100;
+const double bmn = -0.001, bsd = 0.05, sigma = 1.0;
 
 double calcR2 (double rho, int n);

@@ -16,8 +16,6 @@
  * dependent on the chosen value. 
  */
 
-#include "utils.h"
-#include "pop-fns.h"
 #include "model-envcor.h"
 
 /************************************************************************
