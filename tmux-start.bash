@@ -1,5 +1,5 @@
 #!/bin/sh
-SESSION="four-node-nets"
+SESSION="ensembles"
 
 tmux -2 new-session -d -s $SESSION
 

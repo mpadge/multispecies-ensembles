@@ -1,20 +1,59 @@
-/*
- * model-envcor.cc
+/***************************************************************************
+ *  Project:    multispecies-ensembles
+ *  File:       model-envcor.c++
+ *  Language:   C++
  *
- * Adapted to examine the 2 effects of:
- * 	(i)     Correlating the otherwise independent parts of each species'
- * 	        environmental variation (the x_i) according to strengths of
- * 	        interaction; and 
- * 	(ii)    Increasing values of alpha_i in proportion to average strength of
- * 	        interaction.  The first effect requires a scaling coefficient,
- * 	        called nscale, while the second is examined simply by sorting the
- * 	        allocated values of alpha_i.
+ *  multispecies-ensembles is free software: you can redistribute it and/or
+ *  modify it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or (at your
+ *  option) any later version.
  *
- * NOTE that (ii) works, and is implemented directly in pop-fns, while this code
- * implements (i). Although it works, it only generates positive increases for
- * very small values of nscale (<0.001), with resultant R2 values strongly
- * dependent on the chosen value. 
- */
+ *  multispecies-ensembles is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+ *  Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ *  multispecies-ensembles.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *  Copyright   Mark Padgham December 2015
+ *  Author:     Mark Padgham
+ *  E-Mail:     mark.padgham@email.com
+ *
+ *  Description:    Simulates ensembles of multiple species responding to 
+ *                  partially shared stochastic environmental variation.
+ *
+ *  Project Structure:  
+ *      1. model        
+ *              The full simulation model        
+ *      2. model050     
+ *              Estimates the limits of degree of sharing (rho^2) above which
+ *              correlations with aggregate abundance exceed R^2=50%.
+ *      3. model050-theoretical
+ *              As for model050, but using analytic expresssions for species
+ *              interactions only, neglecting other effects.
+ *      4. model-envcor
+ *              Examines additional effects of (i) correlations between
+ *              otherwise independent parts of each species' environmental
+ *              variation, and (ii) correlations between interaction strengths
+ *              and degrees of environmental sharing.
+ *      5. trophic-levels
+ *              Separate routine to estimate number of equivalent trophic levels
+ *              from random community matrices.
+ *
+ *  Limitations:
+ *
+ *  Dependencies:       libboost
+ *
+ *  Compiler Options:   -std=c++11 -lboost_program_options
+ *
+ *  Note that effect (ii) is implemented directly in pop-fns, while this code
+ *  implemenets (i). This requires a scaling coefficient, called nscale.
+ *  Although it works, it only generates positive increases for very small
+ *  values of nscale (<0.001), with resultant R2 values strongly dependent on
+ *  the chosen value. 
+ *
+ ***************************************************************************/
 
 #include "model-envcor.h"
 
@@ -99,7 +138,6 @@ int main(int argc, char *argv[])
 
     time (&seed);
     generator.seed(static_cast<unsigned int>(seed));
-    //generator.seed(static_cast<unsigned int>(20));
     boost::uniform_real<> uni_dist(0,1);
     boost::variate_generator<base_generator_type&,
         boost::uniform_real<> > runif(generator, uni_dist);

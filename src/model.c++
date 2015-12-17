@@ -1,20 +1,53 @@
-/*
- * model.c++
+/***************************************************************************
+ *  Project:    multispecies-ensembles
+ *  File:       pop-fns.h
+ *  Language:   C++
  *
- * The model of multiple species with differing population dynamics responding
- * to a common environmental driver. It includes the following parameters:
- * 	1.	bmn = -0.001; mean of competition matrix; represents predation
- * 	2.	bsd = 0.05; represents strength of competition
- * 	3.	sigma_a = 0.1; SD of variation of autocorrelation coefficients
- * 	4.	sigma_rho = 0.1; SD of variation of degree of environmental sharing.
- * 
- * The whole program is designed to be compared to the theoretical results which
- * don't presume any kind of re-scaling, therefore all random values, including 
- * noise and AC coefficients, have to just be taken as generated, and may not be
- * re-scaled in any way at all. NOTE that this does make competition rather odd,
- * because a predator with negative abundance will actually benefit prey. But
- * that's also precisely the way the theory is written, so has to be accepted.
- */
+ *  multispecies-ensembles is free software: you can redistribute it and/or
+ *  modify it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or (at your
+ *  option) any later version.
+ *
+ *  multispecies-ensembles is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+ *  Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ *  multispecies-ensembles.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *  Copyright   Mark Padgham December 2015
+ *  Author:     Mark Padgham
+ *  E-Mail:     mark.padgham@email.com
+ *
+ *  Description:    Simulates ensembles of multiple species responding to 
+ *                  partially shared stochastic environmental variation.
+ *
+ *  Project Structure:  
+ *      1. model        
+ *              The full simulation model        
+ *      2. model050     
+ *              Estimates the limits of degree of sharing (rho^2) above which
+ *              correlations with aggregate abundance exceed R^2=50%.
+ *      3. model050-theoretical
+ *              As for model050, but using analytic expresssions for species
+ *              interactions only, neglecting other effects.
+ *      4. model-envcor
+ *              Examines additional effects of (i) correlations between
+ *              otherwise independent parts of each species' environmental
+ *              variation, and (ii) correlations between interaction strengths
+ *              and degrees of environmental sharing.
+ *      5. trophic-levels
+ *              Separate routine to estimate number of equivalent trophic levels
+ *              from random community matrices.
+ *
+ *  Limitations:
+ *
+ *  Dependencies:       libboost
+ *
+ *  Compiler Options:   -std=c++11 -lboost_program_options
+ ***************************************************************************/
+
 
 #include "model.h"
 
@@ -24,8 +57,16 @@
  **                         MAIN FUNCTION                              **
  **                                                                    **
  ************************************************************************
- ************************************************************************/
-
+ ************************************************************************
+ *
+ * NOTE that the whole program is designed to be compared to the theoretical
+ * results which don't presume any kind of re-scaling, therefore all random
+ * values, including noise and AC coefficients, have to just be taken as
+ * generated, and may not be re-scaled in any way at all. This does make
+ * competition rather odd, because a predator with negative abundance will
+ * actually benefit prey. But that's also precisely the way the theory is
+ * written, so has to be accepted.
+ */
 int main(int argc, char *argv[])
 {
     int nTrials;
